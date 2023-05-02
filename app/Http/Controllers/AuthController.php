@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Log;
+
 class AuthController extends Controller
 {
     /**
@@ -15,7 +18,8 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login','signup']]);
+        $this->middleware('JWT', ['except' => ['login','signup']]);
+        // $this->middleware('auth:api', ['except' => ['login','signup']]);
     }
 
     /**
@@ -30,7 +34,8 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if ($token = $this->guard()->attempt($credentials)) {
-            return $this->respondWithToken($token);
+            // return $this->respondWithToken($token);
+            return Redirect::route('dashboard1');
         }
 
         return response()->json(['error' => 'Unauthorized'], 401);
@@ -50,7 +55,7 @@ class AuthController extends Controller
 
             DB::table('users')->insert($data);
 
-        return $this->login($request);
+        return $this->login($request)->redirect('dashboard');
     }
 
 
