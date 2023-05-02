@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 class AuthController extends Controller
 {
     /**
@@ -14,7 +15,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('auth:api', ['except' => ['login','signup']]);
     }
 
     /**
@@ -34,6 +35,24 @@ class AuthController extends Controller
 
         return response()->json(['error' => 'Unauthorized'], 401);
     }
+
+    // sign up as a user account
+    public function signup(Request $request){
+        $validateData = $request->validate([
+            'email' => 'required|unique:users|min:5|max:255',
+            'name' => 'required',
+            'password' => 'required|unique:users|min:5|confirmed'
+        ]);
+            $data = array();
+            $data['name'] = $request->name;
+            $data['email'] = $request->email;
+            $data['password'] = Hash::make($request->password);
+
+            DB::table('users')->insert($data);
+
+        return $this->login($request);
+    }
+
 
     /**
      * Get the authenticated User
